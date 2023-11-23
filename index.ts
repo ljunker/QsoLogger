@@ -12,6 +12,10 @@ mongoose.connect('mongodb://localhost:27017/qsoLogger', { useNewUrlParser: true,
 const qsoSchema = new mongoose.Schema({
     callSign: String,
     frequency: String,
+    qth: String,
+    loc: String,
+    rappport: Number,
+    signal: Number,
     mode: String,
     date: { type: Date, default: Date.now }
 });
