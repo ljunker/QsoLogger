@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ham Radio Logger</title>
+</head>
+<body>
+    <h2>Log a New QSO</h2>
+    <form id="qsoForm">
+        <input type="text" id="callSign" placeholder="Call Sign" required>
+        <input type="text" id="frequency" placeholder="Frequency" required>
+        <input type="text" id="mode" placeholder="Mode" required>
+        <button type="submit">Log QSO</button>
+    </form>
+
+    <h2>Logged QSOs</h2>
+    <div id="qsoLogs"></div>
+
+    <script>
+        document.getElementById('qsoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const qsoData = {
+                callSign: document.getElementById('callSign').value,
+                frequency: document.getElementById('frequency').value,
+                mode: document.getElementById('mode').value
+            };
+
+            fetch('/qso', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(qsoData),
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert('QSO logged successfully!');
+                document.getElementById('qsoForm').reset();
+                fetchQSOs(); // Fetch and display all QSOs after adding a new one
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+
+        function fetchQSOs() {
+            fetch('/qso')
+                .then(response => response.json())
+                .then(data => {
+                    displayQSOs(data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function displayQSOs(qsos) {
+            const qsoLogsDiv = document.getElementById('qsoLogs');
+            qsoLogsDiv.innerHTML = ''; // Clear existing content
+            qsos.forEach(qso => {
+                const qsoDiv = document.createElement('div');
+                qsoDiv.textContent = `Call Sign: ${qso.callSign}, Frequency: ${qso.frequency}, Mode: ${qso.mode}, Logged at: ${new Date(qso.date).toLocaleString()}`;
+                qsoLogsDiv.appendChild(qsoDiv);
+            });
+        }
+
+        // Initial fetch of QSOs
+        fetchQSOs();
+    </script>
+</body>
+</html>
