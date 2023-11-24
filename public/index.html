@@ -18,6 +18,14 @@
         <button type="submit">Log QSO</button>
     </form>
 
+    <h2>Filter QSOs</h2>
+    <form id="filterForm">
+        <input type="text" id="filterCallSign" placeholder="Filter by Call Sign">
+        <input type="text" id="filterFrequency" placeholder="Filter by Frequency">
+        <input type="text" id="filterMode" placeholder="Filter by Mode">
+        <button type="submit">Filter</button>
+    </form>
+
     <h2>Logged QSOs</h2>
     <div id="qsoLogs"></div>
 
@@ -28,6 +36,10 @@
             const qsoData = {
                 callSign: document.getElementById('callSign').value,
                 frequency: document.getElementById('frequency').value,
+                qth: document.getElementById('qth').value,
+                loc: document.getElementById('loc').value,
+                rapport: document.getElementById('rapport').value,
+                signal: document.getElementById('signal').value,
                 mode: document.getElementById('mode').value
             };
 
@@ -49,8 +61,21 @@
             });
         });
 
-        function fetchQSOs() {
-            fetch('/qso')
+        document.getElementById('filterForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const filterValues = {
+                callSign: document.getElementById('filterCallSign').value,
+                frequency: document.getElementById('filterFrequency').value,
+                mode: document.getElementById('filterMode').value
+            };
+
+            fetchQSOs(filterValues);
+        });
+
+        function fetchQSOs(filters = {}) {
+            const queryParams = new URLSearchParams(filters).toString();
+            fetch(`/qso?${queryParams}`)
                 .then(response => response.json())
                 .then(data => {
                     displayQSOs(data);
