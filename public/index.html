@@ -4,30 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ham Radio Logger</title>
+    <style>
+        body {
+            font-family: Futura, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 700px;
+            margin: auto;
+            overflow: auto;
+            padding: 0 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        .form-group {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input,
+        .form-group button {
+            width: 10em;
+            padding: 10px;
+            margin-top: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .form-group button {
+            background-color: #0056b3;
+            color: #fff;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #004494;
+        }
+        .qso-log {
+            background: #fff;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+            border-collapse: collapse;
+            text-align: left;
+            padding: .5em;
+        }
+    </style>
 </head>
 <body>
-    <h2>Log a New QSO</h2>
-    <form id="qsoForm">
-        <input type="text" id="callSign" placeholder="Call Sign" required>
-        <input type="text" id="frequency" placeholder="Frequency" required>
-        <input type="text" id="qth" placeholder="Standort">
-        <input type="text" id="loc" placeholder="Locator">
-        <input type="number" id="rapport" min="1" max="5">
-        <input type="number" id="signal" min="1" max="9">
-        <input type="text" id="mode" placeholder="Mode" required>
-        <button type="submit">Log QSO</button>
-    </form>
+    <div class="container">
+        <h2>Log a New QSO</h2>
+        <form id="qsoForm" class="form-group">
+            <input type="text" id="callSign" placeholder="Call Sign" required>
+            <input type="text" id="frequency" placeholder="Frequency" required>
+            <input type="text" id="qth" placeholder="Standort">
+            <input type="text" id="loc" placeholder="Locator">
+            <input type="number" id="rapport" min="1" max="5">
+            <input type="number" id="signal" min="1" max="9">
+            <input type="text" id="mode" placeholder="Mode" required>
+            <button type="submit">Log QSO</button>
+        </form>
 
-    <h2>Filter QSOs</h2>
-    <form id="filterForm">
-        <input type="text" id="filterCallSign" placeholder="Filter by Call Sign">
-        <input type="text" id="filterFrequency" placeholder="Filter by Frequency">
-        <input type="text" id="filterMode" placeholder="Filter by Mode">
-        <button type="submit">Filter</button>
-    </form>
+        <h2>Filter QSOs</h2>
+        <form id="filterForm" class="form-group">
+            <input type="text" id="filterCallSign" placeholder="Filter by Call Sign">
+            <input type="text" id="filterFrequency" placeholder="Filter by Frequency">
+            <input type="text" id="filterMode" placeholder="Filter by Mode">
+            <button type="submit">Filter</button>
+        </form>
 
-    <h2>Logged QSOs</h2>
-    <div id="qsoLogs"></div>
+        <h2>Logged QSOs</h2>
+        <div id="qsoLogs"></div>
+    </div>
 
     <script>
         document.getElementById('qsoForm').addEventListener('submit', function(event) {
@@ -85,18 +139,52 @@
                 });
         }
 
+        function fetchQSOsWithoutFilter() {
+            fetch("/qso")
+                .then(response => response.json())
+                .then(data => displayQSOs(data))
+                .catch((error) => console.error("Error: ", error));
+        }
+
         function displayQSOs(qsos) {
             const qsoLogsDiv = document.getElementById('qsoLogs');
             qsoLogsDiv.innerHTML = ''; // Clear existing content
+            const qsoTable = document.createElement("table");
+            qsoTable.classList.add("qso-table");
+            const headerRow = document.createElement("tr");
+            headerRow.innerHTML = "<th>CallSign</th><th>Frequency</th><th>QTH</th><th>LOC</th><th>Mode</th><th>Date</th>";
+            qsoTable.appendChild(headerRow);
+            qsoLogsDiv.appendChild(qsoTable);
             qsos.forEach(qso => {
+                const row = document.createElement("tr");
                 const qsoDiv = document.createElement('div');
-                qsoDiv.textContent = `Call Sign: ${qso.callSign}, Frequency: ${qso.frequency}, Mode: ${qso.mode}, Logged at: ${new Date(qso.date).toLocaleString()}`;
-                qsoLogsDiv.appendChild(qsoDiv);
+                qsoDiv.classList.add("qso-log");
+                const callSignTD = document.createElement("td");
+                callSignTD.innerText = `${qso.callSign}`;
+                const frequencyTD = document.createElement("td");
+                frequencyTD.innerText = `${qso.frequency}`;
+                const qthTD = document.createElement("td");
+                qthTD.innerText = `${qso.qth}`;
+                const locTD = document.createElement("td");
+                locTD.innerText = `${qso.loc}`;
+                const modeTD = document.createElement("td");
+                modeTD.innerText = `${qso.mode}`;
+                const dateTD = document.createElement("td");
+                dateTD.innerText = `${new Date(qso.date).toLocaleString()}`;
+
+                
+                row.appendChild(callSignTD);
+                row.appendChild(frequencyTD);
+                row.appendChild(qthTD);
+                row.appendChild(locTD);
+                row.appendChild(modeTD);
+                row.appendChild(dateTD);
+                qsoTable.appendChild(row);
             });
         }
 
         // Initial fetch of QSOs
-        fetchQSOs();
+        fetchQSOsWithoutFilter();
     </script>
 </body>
 </html>

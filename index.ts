@@ -39,26 +39,32 @@ app.post('/qso', async (req, res) => {
 // @ts-ignore
 // Endpoint to get all QSO logs with optional filtering
 app.get('/qso', async (req, res) => {
-    try {
-        let query = {
-            callSign: undefined,
-            frequency: undefined,
-            mode: undefined
-        };
-        if (req.query.callSign) {
-            query.callSign = req.query.callSign;
-        }
-        if (req.query.frequency) {
-            query.frequency = req.query.frequency;
-        }
-        if (req.query.mode) {
-            query.mode = req.query.mode;
-        }
-
-        const qsoLogs = await QSO.find(query);
+    if (Object.keys(req.query).length == 0) {
+        const qsoLogs = await QSO.find();
         res.status(200).json(qsoLogs);
-    } catch (error) {
-        res.status(500).send('Error retrieving QSOs');
+    } else {
+        console.log(req.query);
+        try {
+            let query = {
+                callSign: "",
+                frequency: "",
+                mode: ""
+            };
+            if (req.query.callSign) {
+                query.callSign = req.query.callSign;
+            }
+            if (req.query.frequency) {
+                query.frequency = req.query.frequency;
+            }
+            if (req.query.mode) {
+                query.mode = req.query.mode;
+            }
+
+            const qsoLogs = await QSO.find(query);
+            res.status(200).json(qsoLogs);
+        } catch (error) {
+            res.status(500).send('Error retrieving QSOs');
+        }
     }
 });
 
